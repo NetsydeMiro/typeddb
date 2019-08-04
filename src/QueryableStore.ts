@@ -2,12 +2,20 @@ import { Direction, EntityClass } from './common'
 import TypedDB from './TypedDB'
 import TypedStore from './TypedStore'
 
-// QUERY OPERATIONS
-// store.findAllHaving.propName.greaterThan(val, "ascending")
-// store.findFirstHaving.propName.greaterThanOrEqualTo(val)
-// store.find(10).having.propName.greaterThanOrEqualTo(val, "descending")
-// store.find(10).skip(20).having.propName.greaterThanOrEqualTo(val)
-// store.iterate(10).skip(20).having.propName.greaterThanOrEqualTo(val)
+/*
+Query Operations
+store.findAllHaving.propName.greaterThan(val, "ascending")
+store.findFirstHaving.propName.greaterThanOrEqualTo(val)
+store.find(10).having.propName.greaterThanOrEqualTo(val, "descending")
+store.find(10).skip(20).having.propName.greaterThanOrEqualTo(val)
+
+Iterator Operations
+store.iterate().having.propName.all()
+store.iterate().having.propName.all("descending")
+store.iterate().having.propName.greaterThanOrEqualTo(val)
+store.iterate(10).having.propName.lessThanOrEqualTo(val, "descending")
+store.iterate(10).skip(20).having.propName.between(lowerVal, upperVal, "descending")
+*/
 
 interface QueryableProperty<TEntity, TProperty> {
     equaling(val: TProperty): Promise<Array<TEntity>>

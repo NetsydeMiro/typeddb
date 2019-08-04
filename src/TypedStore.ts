@@ -1,14 +1,19 @@
 import { EntityClass } from './common'
 import TypedDB from './TypedDB'
 
-// CRUD
-// store.get
-// store.getAll
-// store.put
-// store.delete
-// store.clear
-// corresponds to native indexedDb function names, except return promises
+/*
+CRUD Operations
+Correspond to native indexedDb function names.  
+Return promises.
 
+store.add
+store.addRange
+store.get
+store.getAll
+store.put
+store.delete
+store.clear
+*/
 
 export class TypedStore<TEntity, TIdProp extends keyof TEntity>{
 

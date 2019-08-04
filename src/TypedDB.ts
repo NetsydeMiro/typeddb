@@ -1,5 +1,3 @@
-// TODO: Add autoincrement support, unique index support, multi query transaction support
-
 import { EntityClass } from './common'
 import TypedStore from './TypedStore'
 import QueryableStore from './QueryableStore'
@@ -104,4 +102,3 @@ export class TypedDB {
 }
 
 export default TypedDB
-
