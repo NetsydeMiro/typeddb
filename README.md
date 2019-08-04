@@ -4,22 +4,19 @@ A TypeScript wrapper for the IndexedDB browser API, enabling strongly typed ORM 
 
 ## Setup
 
-1. Install node modules
-    ```
-    npm install
-    ```
+1. Install dependencies
+
+    `npm install`
+
 2. Build project
-    ```
-    npm run build
-    ```
+
+    `npm run build`
 
 ## Running tests
 
 * **From a browser**
 
-    ```
-    npm start
-    ```
+    `npm start`
 
     Navigate to `http://localhost:9000/__intern/`
 
@@ -47,9 +44,10 @@ A TypeScript wrapper for the IndexedDB browser API, enabling strongly typed ORM 
 
 ### TODO
 
-* Queryable Tests
-* Transaction Support
-* Unique Index Support
-* Configure production build with single minified UMD
+* Queryable tests
+* Auto increment IDs
+* Transactions
+* Unique Indices
+* Production build (single minified UMD)
 * README documentation
 * Github pages Jekyll documentation
