@@ -1,0 +1,29 @@
+{
+    "name": "typeddb",
+    "version": "0.0.1",
+    "description": "A TypeScript wrapper for the IndexedDB browser API, enabling strongly typed ORM style querying.",
+    "scripts": {
+        "start": "intern serveOnly",
+        "build": "tsc && tsc -p tests",
+        "watch:main": "tsc --watch",
+        "watch:test": "tsc --watch -p tests",
+        "clean": "del-cli \"src/**/*.js\" \"tests/**/*.js\"", 
+        "dev": "start npm run watch:main && start npm run watch:test && start npm run start"
+    },
+    "author": "Miro Koprnicky",
+    "license": "ISC",
+    "keywords": [
+        "TypeScript",
+        "IndexedDb",
+        "Promises",
+        "async",
+        "await"
+    ],
+    "devDependencies": {
+        "@types/systemjs": "~0.20.6",
+        "del-cli": "~1.1.0",
+        "intern": "~4.1.2",
+        "systemjs": "~0.20.19",
+        "typescript": "^3.5.3"
+    }
+}

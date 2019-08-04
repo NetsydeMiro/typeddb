@@ -1,0 +1,12 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": "..",
+
+        // Ensure the 'intern' global is deifned
+        "types": [ "intern" ]
+    },
+    "include": [
+        "./**/*.ts"
+    ]
+}

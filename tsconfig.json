@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "inlineSourceMap": true,
+        "module": "commonjs",
+        "target": "es2015",
+
+        // Ensure the SystemJS global is defined
+        "types": [ "systemjs" ]
+    },
+    "include": [
+        "src/**/*.ts"
+    ]
+}
