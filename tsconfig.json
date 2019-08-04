@@ -2,12 +2,18 @@
     "compilerOptions": {
         "inlineSourceMap": true,
         "module": "commonjs",
-        "target": "es2015",
-
-        // Ensure the SystemJS global is defined
-        "types": [ "systemjs" ]
+        "target": "es2017",
+        "outDir": "build",
+        "types": [
+            "systemjs",
+            "intern"
+        ]
     },
     "include": [
-        "src/**/*.ts"
+        "src/**/*.ts",
+        "specs/**/*.ts"
+    ],
+    "exclude": [
+        "./node_modules/*"
     ]
 }

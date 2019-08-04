@@ -44,3 +44,12 @@ A TypeScript wrapper for the IndexedDB browser API, enabling strongly typed ORM 
 
 * https://www.freecodecamp.org/news/a-quick-but-complete-guide-to-indexeddb-25f030425501/
 * https://javascript.info/indexeddb
+
+### TODO
+
+* Queryable Tests
+* Transaction Support
+* Unique Index Support
+* Configure production build with single minified UMD
+* README documentation
+* Github pages Jekyll documentation

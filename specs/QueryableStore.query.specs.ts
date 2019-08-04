@@ -1,35 +1,44 @@
 const { describe, it, before, beforeEach } = intern.getPlugin('interface.bdd');
 const { expect } = intern.getPlugin('chai');
 
-import TypedDB from 'src/TypedDB'
-import TypedStore from 'src/TypedStore'
+import TypedDB from '../src/TypedDB'
+import QueryableStore from '../src/QueryableStore'
 
-class Entity {
+class QueryableEntity {
     anId: number
     aString: string
     aDate: Date
     aBoolean: boolean
+    searchableString: string
+    searchableNumber: number
+    searchableDate: Date
+    searchableBoolean: boolean
 }
 
-function newEntity(anId: number): Entity {
-    let result = new Entity()
+function newEntity(anId: number): QueryableEntity {
+    let result = new QueryableEntity()
 
     result.anId = anId
     result.aString = `string ${anId}`
     result.aDate = new Date(anId, 1, 1)
     result.aBoolean = Math.random() > .5
 
+    result.searchableNumber = anId
+    result.searchableString = `string ${anId}`
+    result.searchableDate = new Date(anId, 1, 1)
+    result.searchableBoolean = Math.random() > .5
+
     return result
 }
 
-describe('TypedStore CRUD Operations', function () {
+describe('QueryableStore Query Operations', function () {
     let db: TypedDB
-    let entityStore: TypedStore<Entity, 'anId'>
+    let entityStore: QueryableStore<QueryableEntity, 'anId', 'searchableString' | 'searchableNumber' | 'searchableDate' | 'searchableBoolean'>
 
     before(async () => {
-        db = new TypedDB('CrudTestsDb', 1)
+        db = new TypedDB('QueryTestsDb', 1)
         await db.deleteDatabase()
-        entityStore = db.defineStore(Entity, 'anId')
+        entityStore = db.defineStore(QueryableEntity, 'anId', ['searchableString', 'searchableNumber', 'searchableDate', 'searchableBoolean'])
         await db.open()
     })
 
@@ -105,7 +114,7 @@ describe('TypedStore CRUD Operations', function () {
             await entityStore.add(createdEntity)
             let retrievedEntity = await entityStore.get(1)
 
-            expect(retrievedEntity).to.be.instanceOf(Entity)
+            expect(retrievedEntity).to.be.instanceOf(QueryableEntity)
         })
     })
 
@@ -130,7 +139,7 @@ describe('TypedStore CRUD Operations', function () {
 
             let retrievedEntities = await entityStore.getAll()
 
-            retrievedEntities.every(e => expect(e).to.be.instanceOf(Entity))
+            retrievedEntities.every(e => expect(e).to.be.instanceOf(QueryableEntity))
         })
     })
 
