@@ -87,21 +87,30 @@ export class TypedStore<TEntity, TIdProp extends keyof TEntity>{
                 .put(item);
 
             req.onsuccess = (event) => resolve()
-
             req.onerror = reject
         })
     }
 
-    delete(id: TEntity[TIdProp]): void {
-        this.db.indexedDB.transaction(this.storeName, "readwrite")
-            .objectStore(this.storeName)
-            .delete(id as any)
+    delete(id: TEntity[TIdProp]): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            let req = this.db.indexedDB.transaction(this.storeName, "readwrite")
+                .objectStore(this.storeName)
+                .delete(id as any)
+
+            req.onsuccess = (event) => resolve()
+            req.onerror = reject
+        })
     }
 
-    clear(): void {
-        this.db.indexedDB.transaction(this.storeName, "readwrite")
-            .objectStore(this.storeName)
-            .clear()
+    clear(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            let req = this.db.indexedDB.transaction(this.storeName, "readwrite")
+                .objectStore(this.storeName)
+                .clear()
+
+            req.onsuccess = (event) => resolve()
+            req.onerror = reject
+        })
     }
 }
 

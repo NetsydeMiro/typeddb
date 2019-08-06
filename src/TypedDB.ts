@@ -102,3 +102,22 @@ export class TypedDB {
 }
 
 export default TypedDB
+
+/*
+type StringIndexSpecifier<TEntity> = keyof TEntity & string
+
+type FullIndexSpecifier<TEntity> = {
+    prop: StringIndexSpecifier<TEntity>
+    unique?: boolean 
+} 
+
+type Index<TEntity> = FullIndexSpecifier<TEntity> | StringIndexSpecifier<TEntity>
+
+function IsFullIndexSpecifier<TEntity>(typedIndex: Index<TEntity>): typedIndex is FullIndexSpecifier<TEntity> {
+    return !!(typedIndex as any).prop
+}
+
+function getIndexedProperty<TEntity>(typedIndex: Index<TEntity>): StringIndexSpecifier<TEntity> {
+    return  (IsFullIndexSpecifier(typedIndex)) ? typedIndex.prop : typedIndex
+}
+*/

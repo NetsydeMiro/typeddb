@@ -1,130 +1,115 @@
-import { Direction, EntityClass } from './common'
+import { Direction, EntityClass, Exclusions } from './common'
+import { EqualTo, GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Between } from './common'
 import TypedDB from './TypedDB'
-import TypedStore from './TypedStore'
+import { IterableStore, OptionalIterateParams, IterateParams } from './IterableStore'
 
 /*
-Query Operations
-store.findAllHaving.propName.greaterThan(val, "ascending")
-store.findFirstHaving.propName.greaterThanOrEqualTo(val)
-store.find(10).having.propName.greaterThanOrEqualTo(val, "descending")
-store.find(10).skip(20).having.propName.greaterThanOrEqualTo(val)
-
-Iterator Operations
-store.iterate().having.propName.all()
-store.iterate().having.propName.all("descending")
-store.iterate().having.propName.greaterThanOrEqualTo(val)
-store.iterate(10).having.propName.lessThanOrEqualTo(val, "descending")
-store.iterate(10).skip(20).having.propName.between(lowerVal, upperVal, "descending")
+Query Builder
+store.select().having('propName').ascending()
+store.select(10).having('propName').descending()
+store.select(10, 20).having('propName').ascending()
+store.select(10, 20).having('propName').greaterThanOrEqualTo(val).ascending()
 */
 
-interface QueryableProperty<TEntity, TProperty> {
-    equaling(val: TProperty): Promise<Array<TEntity>>
-    greaterThan(val: TProperty, dir?: Direction): Promise<Array<TEntity>>
-    greaterThanOrEqualTo(val: TProperty, dir?: Direction): Promise<Array<TEntity>>
-    lessThan(val: TProperty, dir?: Direction): Promise<Array<TEntity>>
-    lessThanOrEqualTo(val: TProperty, dir?: Direction): Promise<Array<TEntity>>
-    between(min: TProperty, max: TProperty, dir?: Direction): Promise<Array<TEntity>>
-}
+class DslDirection<TEntity> {
+    constructor(protected store: QueryableStore<TEntity, any, any>, protected params: IterateParams<TEntity, any>) { }
 
-type QueryOperations<TEntity, TQueryableProps extends keyof TEntity> = {
-    [k in TQueryableProps]: QueryableProperty<TEntity, TEntity[k]>
-}
-
-function performReadonlyQuery(db: TypedDB, storeName: string, indexName: string, range: IDBKeyRange): Promise<Array<any>> {
-    return new Promise<Array<any>>((resolve, reject) => {
-
-        let index = db.indexedDB.transaction(storeName)
-            .objectStore(storeName)
-            .index(indexName)
-
-        let req = index.openCursor(range)
-
-        let entities: Array<any> = []
-
-        req.onsuccess = (event) => {
-            let cursor = (event.target as any).result as IDBCursorWithValue
-
-            if (cursor) {
-                entities.push(cursor.value)
-                cursor.continue()
-            }
-        }
-
-        resolve(entities)
-
-        req.onerror = reject
-    })
-}
-
-function createQueryOperations<TEntity, TQueryableProps extends keyof TEntity>(
-    db: TypedDB,
-    entityClass: EntityClass<TEntity>,
-    queryableProps: Array<TQueryableProps>): QueryOperations<TEntity, TQueryableProps> {
-
-    let findHaving: QueryOperations<TEntity, TQueryableProps> = {} as QueryOperations<TEntity, TQueryableProps>
-
-    entityClass.name
-
-    for (var queryableProp in queryableProps) {
-        findHaving[queryableProp] = {
-            equaling(val): Promise<Array<TEntity>> {
-                let range = IDBKeyRange.only(val)
-                return performReadonlyQuery(db, entityClass.name, queryableProp, range)
-            },
-            greaterThan(val): Promise<Array<TEntity>> {
-                let range = IDBKeyRange.lowerBound(val, true)
-                return performReadonlyQuery(db, entityClass.name, queryableProp, range)
-            },
-            greaterThanOrEqualTo(val): Promise<Array<TEntity>> {
-                let range = IDBKeyRange.lowerBound(val)
-                return performReadonlyQuery(db, entityClass.name, queryableProp, range)
-            },
-            lessThan(val): Promise<Array<TEntity>> {
-                let range = IDBKeyRange.upperBound(val, true)
-                return performReadonlyQuery(db, entityClass.name, queryableProp, range)
-            },
-            lessThanOrEqualTo(val): Promise<Array<TEntity>> {
-                let range = IDBKeyRange.upperBound(val)
-                return performReadonlyQuery(db, entityClass.name, queryableProp, range)
-            },
-            between(min, max): Promise<Array<TEntity>> {
-                let range = IDBKeyRange.bound(min, max)
-                return performReadonlyQuery(db, entityClass.name, queryableProp, range)
-            }
-        }
+    private doSelect(direction: Direction) {
+        let builtParams: IterateParams<TEntity, any> = { ...this.params, direction }
+        return this.store.doSelect(builtParams)
     }
 
-    return findHaving
+    ascending(): Promise<Array<TEntity>> {
+        return this.doSelect("ascending")
+    }
+
+    descending(): Promise<Array<TEntity>> {
+        return this.doSelect("descending")
+    }
 }
 
-export class QueryableStore<TEntity, TIdProp extends keyof TEntity, TQueryableProps extends keyof TEntity> extends TypedStore<TEntity, TIdProp>
+class DslBoundaryOrDirection<TEntity, TProperty> extends DslDirection<TEntity> {
+    constructor(store: QueryableStore<TEntity, any, any>, params: IterateParams<TEntity, any>) { 
+        super(store, params) 
+    }
+
+    equaling(val: TProperty): DslDirection<TEntity> {
+        let range = new EqualTo<TProperty>(val) as any
+        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
+        return new DslDirection(this.store, builtParams)
+    }
+
+    greaterThan(val: TProperty): DslDirection<TEntity> {
+        let range = new GreaterThan<TProperty>(val) as any
+        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
+        return new DslDirection(this.store, builtParams)
+    }
+
+    greaterThanOrEqualTo(val: TProperty): DslDirection<TEntity> {
+        let range = new GreaterThanOrEqual<TProperty>(val) as any
+        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
+        return new DslDirection(this.store, builtParams)
+    }
+
+    lessThan(val: TProperty): DslDirection<TEntity> {
+        let range = new LessThan<TProperty>(val) as any
+        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
+        return new DslDirection(this.store, builtParams)
+    }
+
+    lessThanOrEqualTo(val: TProperty): DslDirection<TEntity> {
+        let range = new LessThanOrEqual<TProperty>(val) as any
+        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
+        return new DslDirection(this.store, builtParams)
+    }
+
+    between(min: TProperty, max: TProperty, exclusions?: Exclusions): DslDirection<TEntity> {
+        let range = new Between<TProperty>(min, max, exclusions) as any
+        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
+        return new DslDirection(this.store, builtParams)
+    }
+}
+
+class DslHaving<TEntity, TIndices extends keyof TEntity> {
+    constructor(private store: QueryableStore<TEntity, any, any>, private params: OptionalIterateParams<TEntity, any>) { }
+
+    having(index: TIndices): DslBoundaryOrDirection<TEntity, TEntity[TIndices]> {
+
+        let builtParams: IterateParams<TEntity, TIndices> = {
+            ...this.params, ...{ index }
+        }
+
+        return new DslBoundaryOrDirection(this.store, builtParams)
+    }
+}
+
+export class QueryableStore<TEntity, TIdProp extends keyof TEntity, TIndices extends keyof TEntity> extends IterableStore<TEntity, TIdProp, TIndices>
 {
-
-    constructor(db: TypedDB, entityClass: EntityClass<TEntity>, idProp: TIdProp, private queryableProps: Array<TQueryableProps>) {
-        super(db, entityClass, idProp)
-        this.findHaving = createQueryOperations(db, entityClass, queryableProps)
+    constructor(db: TypedDB, entityClass: EntityClass<TEntity>, idProp: TIdProp, queryableProps: Array<TIndices>) {
+        super(db, entityClass, idProp, queryableProps)
     }
 
-    findHaving: QueryOperations<TEntity, TQueryableProps>
+    doSelect(params: IterateParams<TEntity, TIndices>): Promise<Array<TEntity>> {
+        return new Promise<Array<TEntity>>((resolve, reject) => {
+            let result: Array<TEntity> = []
+
+            try {
+                this.doIterate(params, (entity) => {
+                    if (entity) result.push(entity)
+                    else resolve(result)
+                })
+            }
+            catch (ex) { reject(ex) }
+        })
+    }
+
+    select(count?: number, skip?: number): DslHaving<TEntity, TIndices> {
+        let params: OptionalIterateParams<TEntity, TIndices> = {
+            count,
+            skip
+        }
+        return new DslHaving(this, params)
+    }
 }
 
 export default QueryableStore
-
-/*
-type StringIndexSpecifier<TEntity> = keyof TEntity & string
-
-type FullIndexSpecifier<TEntity> = {
-    prop: StringIndexSpecifier<TEntity>
-    unique?: boolean 
-} 
-
-type Index<TEntity> = FullIndexSpecifier<TEntity> | StringIndexSpecifier<TEntity>
-
-function IsFullIndexSpecifier<TEntity>(typedIndex: Index<TEntity>): typedIndex is FullIndexSpecifier<TEntity> {
-    return !!(typedIndex as any).prop
-}
-
-function getIndexedProperty<TEntity>(typedIndex: Index<TEntity>): StringIndexSpecifier<TEntity> {
-    return  (IsFullIndexSpecifier(typedIndex)) ? typedIndex.prop : typedIndex
-}
-*/
