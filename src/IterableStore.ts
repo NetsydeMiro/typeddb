@@ -18,8 +18,8 @@ interface Iterator<TEntity> {
 class DslForEach<TEntity> {
     constructor(protected store: IterableStore<TEntity, any, any>, protected params: IterateParams<TEntity, any>) { }
 
-    forEach(iterator: Iterator<TEntity>) {
-        this.store.doIterate(this.params, iterator)
+    forEach(iterator: Iterator<TEntity>): Promise<number> {
+        return this.store.doIterate(this.params, iterator)
     }
 }
 
@@ -104,34 +104,40 @@ export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices exte
 
     doIterate(
         params: IterateParams<TEntity, TIndices>,
-        iterator: Iterator<TEntity>): void {
+        iterator: Iterator<TEntity>): Promise<number> {
 
-        let filledParams = Object.assign({}, this.DEFAULT_ITERATE_PARAMS, params)
+        return new Promise<number>((resolve, reject) => {
+            let filledParams = Object.assign({}, this.DEFAULT_ITERATE_PARAMS, params)
 
-        let index = this.db.indexedDB.transaction(this.storeName)
-            .objectStore(this.storeName)
-            .index(filledParams.index.toString())
+            let index = this.db.indexedDB.transaction(this.storeName)
+                .objectStore(this.storeName)
+                .index(filledParams.index.toString())
 
-        let idbRange = filledParams.range && filledParams.range.toIDBRange()
-        let idbDirection = toIDBDirection(filledParams.direction)
+            let idbRange = filledParams.range && filledParams.range.toIDBRange()
+            let idbDirection = toIDBDirection(filledParams.direction)
 
-        let req = index.openCursor(idbRange, idbDirection)
+            let req = index.openCursor(idbRange, idbDirection)
 
-        let ix = 0
-        req.onsuccess = (event) => {
-            let cursor = (event.target as any).result as IDBCursorWithValue
+            let ix = 0
+            req.onsuccess = (event) => {
+                let cursor = (event.target as any).result as IDBCursorWithValue
 
-            if (cursor) {
-                let entity = Object.assign(new this.entityClass(), cursor.value)
-                if (ix >= filledParams.skip && ix < filledParams.count) {
-                    iterator(entity, ix)
+                if (cursor) {
+                    let entity = Object.assign(new this.entityClass(), cursor.value)
+                    if (ix >= filledParams.skip && ix < filledParams.count) {
+                        iterator(entity, ix)
+                        ix++
+                    }
+                    cursor.continue()
                 }
-                cursor.continue()
+                else {
+                    iterator(null, -1)
+                    resolve(ix)
+                }
             }
-            else iterator(null, -1)
-        }
 
-        req.onerror = (event) => { throw event }
+            req.onerror = reject
+        })
     }
 
     iterate(count?: number, skip?: number): DslOver<TEntity, TIndices> {

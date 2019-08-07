@@ -1,4 +1,4 @@
-const { describe, it, before, beforeEach } = intern.getPlugin('interface.bdd');
+const { describe, it, before, beforeEach, after } = intern.getPlugin('interface.bdd');
 const { expect } = intern.getPlugin('chai');
 
 import TypedDB from '../src/TypedDB'
@@ -44,6 +44,10 @@ describe('QueryableStore Query Operations', function () {
 
     beforeEach(() => {
         entityStore.clear()
+    })
+
+    after(() => {
+        db.deleteDatabase()
     })
 
     describe('#add', function () {

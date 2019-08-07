@@ -1,4 +1,5 @@
 {
+    "$schema": "./node_modules/intern/schemas/config.json",
     "suites": "build/specs/**/*.js",
     "coverage": "build/src/**/*.js",
     "browser": {
