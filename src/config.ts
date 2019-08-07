@@ -1,7 +1,8 @@
 SystemJS.config({
     baseURL: '..', 
     map: {
-        src: 'build/src'
+        src: 'build/src', 
+        sinon: 'node_modules/sinon/pkg/sinon.js'
     }, 
 	packages: {
 		src: {

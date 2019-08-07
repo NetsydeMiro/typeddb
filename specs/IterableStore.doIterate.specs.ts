@@ -3,6 +3,7 @@ const { expect } = intern.getPlugin('chai');
 
 import TypedDB from '../src/TypedDB'
 import IterableStore from '../src/IterableStore'
+import { spy } from 'sinon'
 
 class QueryableEntity {
     anId: number
@@ -10,12 +11,12 @@ class QueryableEntity {
     aDate: Date
     aBoolean: boolean
     searchableString: string
-    searchableNumber: number
+    searchableReversedNumber: number
     searchableDate: Date
     searchableBoolean: boolean
 }
 
-function newEntity(anId: number, searchableNumber: number): QueryableEntity {
+function newEntity(anId: number, searchableReversedNumber: number): QueryableEntity {
     let result = new QueryableEntity()
 
     result.anId = anId
@@ -23,8 +24,8 @@ function newEntity(anId: number, searchableNumber: number): QueryableEntity {
     result.aDate = new Date(anId, 1, 1)
     result.aBoolean = Math.random() > .5
 
-    result.searchableNumber = searchableNumber
-    result.searchableString = `string ${anId}`
+    result.searchableReversedNumber = searchableReversedNumber
+    result.searchableString = `string ${anId.toString().padStart(5, '0')}`
     result.searchableDate = new Date(anId, 1, 1)
     result.searchableBoolean = Math.random() > .5
 
@@ -34,12 +35,12 @@ function newEntity(anId: number, searchableNumber: number): QueryableEntity {
 describe('IterableStore', function () {
     let db: TypedDB
     let entities: Array<QueryableEntity> 
-    let entityStore: IterableStore<QueryableEntity, 'anId', 'searchableString' | 'searchableNumber' | 'searchableDate' | 'searchableBoolean'>
+    let entityStore: IterableStore<QueryableEntity, 'anId', 'searchableString' | 'searchableReversedNumber' | 'searchableDate' | 'searchableBoolean'>
 
     before(async () => {
         db = new TypedDB('IterateTestsDb', 1)
         await db.deleteDatabase()
-        entityStore = db.defineStore(QueryableEntity, 'anId', ['searchableString', 'searchableNumber', 'searchableDate', 'searchableBoolean'])
+        entityStore = db.defineStore(QueryableEntity, 'anId', ['searchableString', 'searchableReversedNumber', 'searchableDate', 'searchableBoolean'])
         await db.open()
 
         entities = []
@@ -56,12 +57,35 @@ describe('IterableStore', function () {
 
     describe('#doIterate', function () {
         it('should return correct iteration count if within bounds', async function () {
-            let iterated = await entityStore.doIterate({index: "searchableNumber", count: 10}, () => {})
+            let iterated = await entityStore.doIterate({index: "searchableString", count: 10}, () => {})
             expect(iterated).to.equal(10)
         })
         it('should return clipped iteration count if outside of bounds', async function () {
-            let iterated = await entityStore.doIterate({ index: "searchableNumber", count: 200 }, () => { })
-            expect(iterated).to.equal(100)
+            let iterated = await entityStore.doIterate({ index: "searchableString", count: 200 }, () => { })
+            expect(iterated).to.equal(entities.length)
+        })
+        it('should iterate correct number of times if count is within bounds', async function () {
+            let cb = spy()
+            await entityStore.doIterate({index: "searchableString", count: 10}, cb)
+            expect(cb.callCount).to.equal(11)
+        })
+        it('should iterate clipped number of times if count specified outside of bounds', async function () {
+            let cb = spy()
+            await entityStore.doIterate({index: "searchableString", count: 200}, cb)
+            expect(cb.callCount).to.equal(entities.length + 1)
+        })
+        it('should return null and -1 on final iteration', async function () {
+            let cb = spy()
+            await entityStore.doIterate({index: "searchableString", count: 5}, cb)
+            expect(cb.lastCall.args).to.eql([null, -1])
+        })
+        it('should return correct entity and index when iterating', async function () {
+            let cb = spy()
+            await entityStore.doIterate({index: "searchableString", count: 3}, cb)
+
+            expect(cb.getCall(0).args).to.eql([entities[0], 0])
+            expect(cb.getCall(1).args).to.eql([entities[1], 1])
+            expect(cb.getCall(2).args).to.eql([entities[2], 2])
         })
     })
 })
