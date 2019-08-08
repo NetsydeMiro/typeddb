@@ -1,93 +1,19 @@
-import { Direction, Range, toIDBDirection, EntityClass, Exclusions } from './common'
-import { All, EqualTo, GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Between } from './common'
+import { Direction, Range, toIDBDirection, EntityClass, All } from './common'
+import { DslSkip } from './IterableDsl'
 import TypedDB from './TypedDB'
 import TypedStore from './TypedStore'
 
-/*
-Iterator DSL
-store.iterate().over('propName').forEach(iterator)
-store.iterate(10).over('propName').forEach(iterator)
-store.iterate(10, 20).over('propName', 'descending').forEach(iterator)
-store.iterate(10, 20).over('propName', 'descending').greaterThanOrEqualTo(val).forEach(iterator)
-*/
-
-interface Iterator<TEntity> {
+export interface Iterator<TEntity> {
     (entity: TEntity, ix: number): void
 }
 
-class DslForEach<TEntity> {
-    constructor(protected store: IterableStore<TEntity, any, any>, protected params: IterateParams<TEntity, any>) { }
-
-    forEach(iterator: Iterator<TEntity>): Promise<number> {
-        return this.store.doIterate(this.params, iterator)
-    }
-}
-
-class DslBoundaryOrForEach<TEntity, TProperty> extends DslForEach<TEntity> {
-
-    constructor(store: IterableStore<TEntity, any, any>, params: IterateParams<TEntity, any>) {
-        super(store, params)
-    }
-
-    equaling(val: TProperty): DslForEach<TEntity> {
-        let range = new EqualTo<TProperty>(val) as any
-        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
-        return new DslForEach(this.store, builtParams)
-    }
-
-    greaterThan(val: TProperty): DslForEach<TEntity> {
-        let range = new GreaterThan<TProperty>(val) as any
-        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
-        return new DslForEach(this.store, builtParams)
-    }
-
-    greaterThanOrEqualTo(val: TProperty): DslForEach<TEntity> {
-        let range = new GreaterThanOrEqual<TProperty>(val) as any
-        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
-        return new DslForEach(this.store, builtParams)
-    }
-
-    lessThan(val: TProperty): DslForEach<TEntity> {
-        let range = new LessThan<TProperty>(val) as any
-        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
-        return new DslForEach(this.store, builtParams)
-    }
-
-    lessThanOrEqualTo(val: TProperty): DslForEach<TEntity> {
-        let range = new LessThanOrEqual<TProperty>(val) as any
-        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
-        return new DslForEach(this.store, builtParams)
-    }
-
-    between(min: TProperty, max: TProperty, exclusions?: Exclusions): DslForEach<TEntity> {
-        let range = new Between<TProperty>(min, max, exclusions) as any
-        let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
-        return new DslForEach(this.store, builtParams)
-    }
-}
-
-class DslOver<TEntity, TIndices extends keyof TEntity> {
-    constructor(private store: IterableStore<TEntity, any, any>, private params: OptionalIterateParams<TEntity, any>) { }
-
-    over(index: TIndices, direction: Direction = "ascending"): DslBoundaryOrForEach<TEntity, TEntity[TIndices]> {
-
-        let builtParams: IterateParams<TEntity, TIndices> = {
-            ...this.params, ...{ index, direction }
-        }
-
-        return new DslBoundaryOrForEach(this.store, builtParams)
-    }
-}
-
 export interface IterateParams<TEntity, TIndices extends keyof TEntity> {
-    index: TIndices
+    index?: TIndices
+    count?: number
+    skip?: number
     range?: Range<TEntity[TIndices]>
-    direction?: Direction,
-    count?: number,
-    skip?: number,
+    direction?: Direction
 }
-
-export type OptionalIterateParams<TEntity, TIndices extends keyof TEntity> = Partial<IterateParams<TEntity, TIndices>>
 
 export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices extends keyof TEntity> extends TypedStore<TEntity, TIdProp>
 {
@@ -95,11 +21,12 @@ export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices exte
         super(db, entityClass, idProp)
     }
 
-    private readonly DEFAULT_ITERATE_PARAMS: OptionalIterateParams<TEntity, TIndices> = {
-        direction: "ascending",
-        skip: 0,
+    private readonly DEFAULT_ITERATE_PARAMS: IterateParams<TEntity, TIndices | TIdProp> = {
+        index: this.idProp,
         count: Number.MAX_SAFE_INTEGER,
-        range: new All()
+        skip: 0,
+        range: new All(), 
+        direction: "ascending"
     }
 
     doIterate(
@@ -140,12 +67,9 @@ export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices exte
         })
     }
 
-    iterate(count?: number, skip?: number): DslOver<TEntity, TIndices> {
-        let params: OptionalIterateParams<TEntity, TIndices> = {
-            count,
-            skip
-        }
-        return new DslOver(this, params)
+    iterate(count?: number): DslSkip<TEntity, TIndices> {
+        let params: IterateParams<TEntity, TIndices> = { count }
+        return new DslSkip(this, params)
     }
 }
 
