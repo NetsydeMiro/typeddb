@@ -11,75 +11,59 @@ export interface EntityClass<TEntity> {
     new(): TEntity
 }
 
-export abstract class Range<T> {
-    constructor(protected point1: T, protected point2?: T) {}
-
-    abstract toIDBRange(): IDBKeyRange
-}
-
-export class All extends Range<any> {
-    constructor() { super(null) }
-
-    toIDBRange(): IDBKeyRange {
-        return null
-    }
-}
-
-export class EqualTo<T> extends Range<T> {
-    constructor(val: T) { super(val) }
-
-    toIDBRange(): IDBKeyRange {
-        return IDBKeyRange.only(this.point1)
-    }
-}
-
-export class GreaterThan<T> extends Range<T> {
-    constructor(min: T) { super(min) }
-
-    toIDBRange(): IDBKeyRange {
-        return IDBKeyRange.lowerBound(this.point1, true)
-    }
-}
-
-export class GreaterThanOrEqual<T> extends Range<T> {
-    constructor(min: T) { super(min) }
-
-    toIDBRange(): IDBKeyRange {
-        return IDBKeyRange.lowerBound(this.point1)
-    }
-}
-
-export class LessThan<T> extends Range<T> {
-    constructor(max: T) { super(max)}
-
-    toIDBRange(): IDBKeyRange {
-        return IDBKeyRange.upperBound(this.point1, true)
-    }
-}
-
-export class LessThanOrEqual<T> extends Range<T> {
-    constructor(max: T) { super(max)}
-
-    toIDBRange(): IDBKeyRange {
-        return IDBKeyRange.upperBound(this.point1)
-    }
-}
-
 export interface Exclusions {
     excludeMin?: boolean
     excludeMax?: boolean
 }
 
-export class Between<T> extends Range<T> {
-    constructor(min: T, max: T, private exclusions?: Exclusions) { 
-        super(min, max) 
+export class Range<T> {
+    constructor(public toIDBRange: { (): IDBKeyRange }) { }
+
+    static all() : Range<any> {
+        return new Range(
+            () => null
+        )
     }
 
-    toIDBRange(): IDBKeyRange {
-        return IDBKeyRange.bound(
-            this.point1, 
-            this.point2, 
-            this.exclusions && this.exclusions.excludeMin, 
-            this.exclusions && this.exclusions.excludeMax)
+    static equalTo<T>(val: T) : Range<T> {
+        return new Range<T>(
+            () => IDBKeyRange.only(val)
+        )
+    }
+
+    static greaterThan<T>(min: T): Range<T> {
+        return new Range<T>(
+            () => IDBKeyRange.lowerBound(min, true)
+
+        )
+    }
+
+    static greaterThanOrEqualTo<T>(min: T): Range<T> {
+        return new Range<T>(
+            () => IDBKeyRange.lowerBound(min)
+
+        )
+    }
+
+    static lessThan<T>(max: T): Range<T> {
+        return new Range<T>(
+            () => IDBKeyRange.upperBound(max, true)
+        )
+    }
+
+    static lessThanOrEqualTo<T>(max: T): Range<T> {
+        return new Range<T>(
+            () => IDBKeyRange.upperBound(max)
+        )
+    }
+
+    static between<T>(min: T, max: T, exclusions?: Exclusions): Range<T> {
+        return new Range<T>(
+            () => IDBKeyRange.bound(
+                min,
+                max,
+                exclusions && exclusions.excludeMin,
+                exclusions && exclusions.excludeMax)
+        )
     }
 }

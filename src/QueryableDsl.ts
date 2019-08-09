@@ -1,5 +1,4 @@
-import { Direction, Exclusions } from './common'
-import { EqualTo, GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Between } from './common'
+import { Direction, Exclusions, Range } from './common'
 import { QueryableStore } from './QueryableStore'
 import { IterateParams } from './IterableStore'
 
@@ -37,37 +36,37 @@ class DslBoundary<TEntity, TIndices extends keyof TEntity> extends DslDirection<
     }
 
     equaling(val: TEntity[TIndices]): DslDirection<TEntity> {
-        let range = new EqualTo<TEntity[TIndices]>(val) as any
+        let range = Range.equalTo<TEntity[TIndices]>(val) as any
         let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
         return new DslDirection(this.store, builtParams)
     }
 
     greaterThan(val: TEntity[TIndices]): DslDirection<TEntity> {
-        let range = new GreaterThan<TEntity[TIndices]>(val) as any
+        let range = Range.greaterThan<TEntity[TIndices]>(val) as any
         let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
         return new DslDirection(this.store, builtParams)
     }
 
     greaterThanOrEqualTo(val: TEntity[TIndices]): DslDirection<TEntity> {
-        let range = new GreaterThanOrEqual<TEntity[TIndices]>(val) as any
+        let range = Range.greaterThanOrEqualTo<TEntity[TIndices]>(val) as any
         let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
         return new DslDirection(this.store, builtParams)
     }
 
     lessThan(val: TEntity[TIndices]): DslDirection<TEntity> {
-        let range = new LessThan<TEntity[TIndices]>(val) as any
+        let range = Range.lessThan<TEntity[TIndices]>(val) as any
         let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
         return new DslDirection(this.store, builtParams)
     }
 
     lessThanOrEqualTo(val: TEntity[TIndices]): DslDirection<TEntity> {
-        let range = new LessThanOrEqual<TEntity[TIndices]>(val) as any
+        let range = Range.lessThanOrEqualTo<TEntity[TIndices]>(val) as any
         let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
         return new DslDirection(this.store, builtParams)
     }
 
     between(min: TEntity[TIndices], max: TEntity[TIndices], exclusions?: Exclusions): DslDirection<TEntity> {
-        let range = new Between<TEntity[TIndices]>(min, max, exclusions) as any
+        let range = Range.between<TEntity[TIndices]>(min, max, exclusions) as any
         let builtParams: IterateParams<TEntity, any> = { ...this.params, range }
         return new DslDirection(this.store, builtParams)
     }
