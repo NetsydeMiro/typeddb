@@ -28,7 +28,7 @@ export interface Exclusions {
 }
 
 export class Range<T> {
-    constructor(public toIDBRange: { (): IDBKeyRange }) { }
+    constructor(public toIDBRange: { (): IDBKeyRange }, private point1?: T) { }
 
     static all() : Range<any> {
         return new Range(

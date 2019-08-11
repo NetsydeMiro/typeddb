@@ -29,11 +29,10 @@ export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices exte
             iterator = arg2
         }
 
-        return new Promise<number>((resolve, reject) => {
-            let filledParams = Object.assign({}, this.DEFAULT_SELECTION_PARAMS, params)
-            
-            let cursorable: IDBIndex | IDBObjectStore
+        let filledParams = Object.assign({}, this.DEFAULT_SELECTION_PARAMS, params)
+        let cursorable: IDBIndex | IDBObjectStore
 
+        return new Promise<number>((resolve, reject) => {
             if (filledParams.index) {
                 cursorable = this.db.indexedDB
                     .transaction(this.storeName)

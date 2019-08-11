@@ -31,6 +31,7 @@ A TypeScript wrapper for the IndexedDB browser API, enabling strongly typed ORM 
 ### Mocks
 
 * https://github.com/dumbmatter/fakeIndexedDB
+* https://github.com/axemclion/IndexedDBShim
 
 ### Guides
 
@@ -41,6 +42,7 @@ A TypeScript wrapper for the IndexedDB browser API, enabling strongly typed ORM 
 
 * https://www.freecodecamp.org/news/a-quick-but-complete-guide-to-indexeddb-25f030425501/
 * https://javascript.info/indexeddb
+* https://www.codeproject.com/Articles/744986/How-to-do-some-magic-with-indexedDB
 
 ### TODO
 
@@ -49,6 +51,8 @@ A TypeScript wrapper for the IndexedDB browser API, enabling strongly typed ORM 
 * getAll param tests
 * Auto Increment IDs
 * Transactions
+* OR suppport
+* AND suppport
 * Unique Indices
 * Production build (single minified UMD)
 * README documentation
