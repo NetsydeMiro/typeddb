@@ -1,38 +1,23 @@
-import { Direction, Range, toIDBDirection, EntityClass } from './common'
+import { toIDBDirection, EntityClass, SelectionParams } from './common'
 import { DslSkip } from './IterableDsl'
 import TypedDB from './TypedDB'
-import TypedStore from './TypedStore'
+import { TypedStore } from './TypedStore'
 
 export interface Iterator<TEntity> {
     (entity: TEntity, ix: number): void
 }
 
-export interface IterateParams<TEntity, TIndices extends keyof TEntity> {
-    index?: TIndices
-    count?: number
-    skip?: number
-    range?: Range<TEntity[TIndices]>
-    direction?: Direction
-}
-
-export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices extends keyof TEntity> extends TypedStore<TEntity, TIdProp>
+export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices extends keyof TEntity> extends TypedStore<TEntity, TIdProp, TIndices>
 {
     constructor(db: TypedDB, entityClass: EntityClass<TEntity>, idProp: TIdProp, private indexedProps: Array<TIndices>) {
         super(db, entityClass, idProp)
     }
 
-    private readonly DEFAULT_ITERATE_PARAMS: IterateParams<TEntity, TIndices | TIdProp> = {
-        count: Number.MAX_SAFE_INTEGER,
-        skip: 0,
-        range: Range.all(), 
-        direction: "ascending"
-    }
-
     doIterate(iterator: Iterator<TEntity>): Promise<number> 
-    doIterate(params: IterateParams<TEntity, TIndices>, iterator: Iterator<TEntity>): Promise<number> 
+    doIterate(params: SelectionParams<TEntity, TIndices>, iterator: Iterator<TEntity>): Promise<number> 
 
-    doIterate(arg1: IterateParams<TEntity, TIndices> | Iterator<TEntity>, arg2?: Iterator<TEntity>): Promise<number> {
-        let params: IterateParams<TEntity, TIndices> 
+    doIterate(arg1: SelectionParams<TEntity, TIndices> | Iterator<TEntity>, arg2?: Iterator<TEntity>): Promise<number> {
+        let params: SelectionParams<TEntity, TIndices> 
         let iterator: Iterator<TEntity>
 
         if (!arg2) {
@@ -40,12 +25,12 @@ export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices exte
             iterator = arg1 as Iterator<TEntity>
         }
         else {
-            params = arg1 as IterateParams<TEntity, TIndices>
+            params = arg1 as SelectionParams<TEntity, TIndices>
             iterator = arg2
         }
 
         return new Promise<number>((resolve, reject) => {
-            let filledParams = Object.assign({}, this.DEFAULT_ITERATE_PARAMS, params)
+            let filledParams = Object.assign({}, this.DEFAULT_SELECTION_PARAMS, params)
             
             let cursorable: IDBIndex | IDBObjectStore
 
@@ -93,7 +78,7 @@ export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices exte
     }
 
     iterate(count?: number): DslSkip<TEntity, TIndices> {
-        let params: IterateParams<TEntity, TIndices> = { count }
+        let params: SelectionParams<TEntity, TIndices> = { count }
         return new DslSkip(this, params)
     }
 }

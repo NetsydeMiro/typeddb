@@ -11,6 +11,17 @@ export interface EntityClass<TEntity> {
     new(): TEntity
 }
 
+export interface GetParams<TEntity, TIndices extends keyof TEntity> {
+    index?: TIndices
+    count?: number
+    range?: Range<TEntity[TIndices]>
+    direction?: Direction
+}
+
+export interface SelectionParams<TEntity, TIndices extends keyof TEntity> extends GetParams<TEntity, TIndices> {
+    skip?: number
+}
+
 export interface Exclusions {
     excludeMin?: boolean
     excludeMax?: boolean

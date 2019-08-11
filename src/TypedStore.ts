@@ -1,4 +1,4 @@
-import { EntityClass } from './common'
+import { EntityClass, Range, GetParams, SelectionParams } from './common'
 import TypedDB from './TypedDB'
 
 /*
@@ -15,11 +15,18 @@ store.delete
 store.clear
 */
 
-export class TypedStore<TEntity, TIdProp extends keyof TEntity>{
+export class TypedStore<TEntity, TIdProp extends keyof TEntity, TIndices extends keyof TEntity>{
 
     constructor(protected db: TypedDB, protected entityClass: EntityClass<TEntity>, protected idProp: TIdProp) { }
 
     protected get storeName(): string { return this.entityClass.name }
+
+    protected readonly DEFAULT_SELECTION_PARAMS: SelectionParams<TEntity, TIndices | TIdProp> = {
+        count: 2 ** 32 - 1,
+        skip: 0,
+        range: Range.all(), 
+        direction: "ascending"
+    }
 
     private addHelper(store: IDBObjectStore, item: TEntity): Promise<TEntity> {
         return new Promise<TEntity>((resolve, reject) => {
@@ -65,11 +72,27 @@ export class TypedStore<TEntity, TIdProp extends keyof TEntity>{
         })
     }
 
-    getAll(): Promise<Array<TEntity>> {
+    getAll(params?: GetParams<TEntity, TIndices>): Promise<Array<TEntity>> {
         return new Promise<Array<TEntity>>((resolve, reject) => {
-            let req = this.db.indexedDB.transaction(this.storeName)
-                .objectStore(this.storeName)
-                .getAll()
+
+            let filledParams = Object.assign({}, this.DEFAULT_SELECTION_PARAMS, params)
+            
+            let cursorable: IDBIndex | IDBObjectStore
+
+            if (filledParams.index) {
+                cursorable = this.db.indexedDB
+                    .transaction(this.storeName)
+                    .objectStore(this.storeName)
+                    .index(filledParams.index.toString())
+            }
+            else {
+                cursorable = this.db.indexedDB
+                    .transaction(this.storeName)
+                    .objectStore(this.storeName)
+            }
+
+            let req = cursorable
+                .getAll(filledParams.range.toIDBRange(), filledParams.count)
 
             req.onsuccess = (event) => {
                 let items = (event.target as any).result as Array<TEntity>

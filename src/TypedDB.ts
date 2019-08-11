@@ -1,5 +1,4 @@
 import { EntityClass } from './common'
-import TypedStore from './TypedStore'
 import QueryableStore from './QueryableStore'
 
 interface StoreDefinition {
@@ -19,22 +18,11 @@ export class TypedDB {
     private storeDefinitions: Array<StoreDefinition> = []
     public indexedDB: IDBDatabase
 
-    defineStore<TEntity, TIdProp extends keyof TEntity>(
-        entityClass: EntityClass<TEntity>,
-        idProp: TIdProp,
-    ): TypedStore<TEntity, TIdProp> 
-
-    defineStore<TEntity, TIdProp extends keyof TEntity, TQueryableProps extends keyof TEntity>(
-        entityClass: EntityClass<TEntity>,
-        idProp: TIdProp,
-        indices: Array<TQueryableProps>
-    ): QueryableStore<TEntity, TIdProp, TQueryableProps>
-
-    defineStore<TEntity, TIdProp extends keyof TEntity, TQueryableProps extends keyof TEntity>(
+    defineStore<TEntity, TIdProp extends keyof TEntity, TQueryableProps extends keyof TEntity = TIdProp>(
         entityClass: EntityClass<TEntity>,
         idProp: TIdProp,
         indices?: Array<TQueryableProps>
-    ): TypedStore<TEntity, TIdProp> {
+    ): QueryableStore<TEntity, TIdProp, TQueryableProps> {
 
         this.storeDefinitions.push({
             name: entityClass.name,
@@ -42,8 +30,7 @@ export class TypedDB {
             indices: indices && indices.map(i => i.toString())
         })
 
-        if (indices) return new QueryableStore<TEntity, TIdProp, TQueryableProps>(this, entityClass, idProp, indices)
-        else return new TypedStore<TEntity, TIdProp>(this, entityClass, idProp)
+        return new QueryableStore<TEntity, TIdProp, TQueryableProps>(this, entityClass, idProp, indices)
     }
 
     deleteDatabase(): Promise<void> {

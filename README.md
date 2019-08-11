@@ -45,7 +45,9 @@ A TypeScript wrapper for the IndexedDB browser API, enabling strongly typed ORM 
 ### TODO
 
 * Queryable tests
-* Auto increment IDs
+* Count Support
+* getAll param tests
+* Auto Increment IDs
 * Transactions
 * Unique Indices
 * Production build (single minified UMD)

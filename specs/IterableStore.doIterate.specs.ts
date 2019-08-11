@@ -155,8 +155,8 @@ describe('IterableStore', function () {
             })
         })
 
-        describe('boundary specified', () => {
-            it('should return correct entity and index when iterating', async function () {
+        describe('bounds specified', () => {
+            it('should return correct entities and indices', async function () {
                 let cb = spy()
                 await entityStore.doIterate({ count: 3, range: Range.greaterThan(3) }, cb)
 
@@ -176,11 +176,135 @@ describe('IterableStore', function () {
             })
             it('should not iterate if range yields no entities', async function () {
                 let cb = spy()
-                let iterated = await entityStore.doIterate({ count: 3, range: Range.greaterThan(11) }, cb)
+                let iteratedCount = await entityStore.doIterate({ count: 3, range: Range.greaterThan(11) }, cb)
 
-                expect(iterated).to.equal(0)
+                expect(iteratedCount).to.equal(0)
                 expect(cb.calledOnce).to.be.true
                 expect(cb.getCall(0).args).to.eql([null, -1])
+            })
+        })
+
+        describe('bound types', () => {
+            describe('equal to', () => {
+                it('should return correct entities and indices', async () => {
+                    let cb = spy()
+                    let iteratedCount = await entityStore.doIterate({ range: Range.equalTo(3) }, cb)
+
+                    expect(iteratedCount).to.equal(1)
+                    expect(cb.callCount).to.equal(2)
+
+                    let filtered = entities.filter(e => e.anId == 3)
+                    filtered.forEach((entity, ix) => {
+                        expect(cb.getCall(ix).args).to.eql([entity, ix])
+                    })
+                })
+            })
+            describe('less than', () => {
+                it('should return correct entities and indices', async () => {
+                    let cb = spy()
+                    let iteratedCount = await entityStore.doIterate({ range: Range.lessThan(3) }, cb)
+
+                    expect(iteratedCount).to.equal(2)
+                    expect(cb.callCount).to.equal(3)
+
+                    let filtered = entities.filter(e => e.anId < 3)
+                    filtered.forEach((entity, ix) => {
+                        expect(cb.getCall(ix).args).to.eql([entity, ix])
+                    })
+                })
+            })
+            describe('less than or equal to', () => {
+                it('should return correct entities and indices', async () => {
+                    let cb = spy()
+                    let iteratedCount = await entityStore.doIterate({ range: Range.lessThanOrEqualTo(3) }, cb)
+
+                    expect(iteratedCount).to.equal(3)
+                    expect(cb.callCount).to.equal(4)
+
+                    let filtered = entities.filter(e => e.anId <= 3)
+                    filtered.forEach((entity, ix) => {
+                        expect(cb.getCall(ix).args).to.eql([entity, ix])
+                    })
+                })
+            })
+            describe('greater than', () => {
+                it('should return correct entities and indices', async () => {
+                    let cb = spy()
+                    let iteratedCount = await entityStore.doIterate({ range: Range.greaterThan(8) }, cb)
+
+                    expect(iteratedCount).to.equal(2)
+                    expect(cb.callCount).to.equal(3)
+
+                    let filtered = entities.filter(e => e.anId > 8)
+                    filtered.forEach((entity, ix) => {
+                        expect(cb.getCall(ix).args).to.eql([entity, ix])
+                    })
+                })
+            })
+            describe('greater than or equal to', () => {
+                it('should return correct entities and indices', async () => {
+                    let cb = spy()
+                    let iteratedCount = await entityStore.doIterate({ range: Range.greaterThanOrEqualTo(8) }, cb)
+
+                    expect(iteratedCount).to.equal(3)
+                    expect(cb.callCount).to.equal(4)
+
+                    let filtered = entities.filter(e => e.anId >= 8)
+                    filtered.forEach((entity, ix) => {
+                        expect(cb.getCall(ix).args).to.eql([entity, ix])
+                    })
+                })
+            })
+            describe('between', () => {
+                it('should return correct entities and indices', async () => {
+                    let cb = spy()
+                    let iteratedCount = await entityStore.doIterate({ range: Range.between(4, 8) }, cb)
+
+                    expect(iteratedCount).to.equal(5)
+                    expect(cb.callCount).to.equal(6)
+
+                    let filtered = entities.filter(e => 4 <= e.anId && e.anId <= 8)
+                    filtered.forEach((entity, ix) => {
+                        expect(cb.getCall(ix).args).to.eql([entity, ix])
+                    })
+                })
+                it('can specify open lower bound', async () => {
+                    let cb = spy()
+                    let iteratedCount = await entityStore.doIterate({ range: Range.between(4, 8, {excludeMin: true}) }, cb)
+
+                    expect(iteratedCount).to.equal(4)
+                    expect(cb.callCount).to.equal(5)
+
+                    let filtered = entities.filter(e => 4 < e.anId && e.anId <= 8)
+                    filtered.forEach((entity, ix) => {
+                        expect(cb.getCall(ix).args).to.eql([entity, ix])
+                    })
+                })
+                it('can specify open upper bound', async () => {
+                    let cb = spy()
+                    let iteratedCount = await entityStore.doIterate({ range: Range.between(4, 8, { excludeMax: true }) }, cb)
+
+                    expect(iteratedCount).to.equal(4)
+                    expect(cb.callCount).to.equal(5)
+
+                    let filtered = entities.filter(e => 4 <= e.anId && e.anId < 8)
+                    filtered.forEach((entity, ix) => {
+                        expect(cb.getCall(ix).args).to.eql([entity, ix])
+                    })
+                })
+            })
+        })
+        describe("Index Specified", () => {
+            it('should return correct entities and indices', async function () {
+                let cb = spy()
+                let iteratedCount = await entityStore.doIterate({ index: 'searchableReversedNumber' }, cb)
+
+                expect(iteratedCount).to.equal(entities.length)
+                expect(cb.callCount).to.equal(entities.length + 1)
+
+                for (let ix = 0; ix < entities.length; ix++) {
+                    expect(cb.getCall(ix).args).to.eql([entities[entities.length-ix-1], ix])
+                }
             })
         })
     })

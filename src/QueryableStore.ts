@@ -1,6 +1,6 @@
-import { EntityClass } from './common'
+import { EntityClass, SelectionParams } from './common'
 import TypedDB from './TypedDB'
-import { IterableStore, IterateParams } from './IterableStore'
+import { IterableStore } from './IterableStore'
 import { DslSkip } from './QueryableDsl'
 
 export class QueryableStore<TEntity, TIdProp extends keyof TEntity, TIndices extends keyof TEntity> extends IterableStore<TEntity, TIdProp, TIndices>
@@ -9,22 +9,25 @@ export class QueryableStore<TEntity, TIdProp extends keyof TEntity, TIndices ext
         super(db, entityClass, idProp, queryableProps)
     }
 
-    doSelect(params: IterateParams<TEntity, TIndices>): Promise<Array<TEntity>> {
+    doSelect(params: SelectionParams<TEntity, TIndices>): Promise<Array<TEntity>> {
         return new Promise<Array<TEntity>>((resolve, reject) => {
             let result: Array<TEntity> = []
 
             try {
-                this.doIterate(params, (entity) => {
-                    if (entity) result.push(entity)
-                    else resolve(result)
-                })
+                if (params.skip) {
+                    this.doIterate(params, (entity) => {
+                        if (entity) result.push(entity)
+                        else resolve(result)
+                    })
+                }
+                else return this.getAll(params)
             }
             catch (ex) { reject(ex) }
         })
     }
 
     select(count?: number): DslSkip<TEntity, TIndices> {
-        let params: IterateParams<TEntity, TIndices> = { count }
+        let params: SelectionParams<TEntity, TIndices> = { count }
         return new DslSkip(this, params)
     }
 }
