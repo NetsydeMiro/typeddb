@@ -1,4 +1,4 @@
-import { EntityClass, Range, GetParams, SelectionParams } from './common'
+import { EntityClass, Range, GetParams, QueryParams } from './common'
 import TypedDB from './TypedDB'
 
 /*
@@ -21,7 +21,7 @@ export class TypedStore<TEntity, TIdProp extends keyof TEntity, TIndices extends
 
     protected get storeName(): string { return this.entityClass.name }
 
-    protected readonly DEFAULT_SELECTION_PARAMS: SelectionParams<TEntity, TIndices | TIdProp> = {
+    protected readonly DEFAULT_SELECTION_PARAMS: QueryParams<TEntity, TIndices | TIdProp> = {
         count: 2 ** 32 - 1,
         skip: 0,
         range: Range.all(), 

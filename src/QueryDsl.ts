@@ -3,7 +3,7 @@ import { Iterator } from './IterableStore'
 import { Selector } from './QueryableStore'
 
 /*
-Fluid DSL
+Query Builder DSL
 
 store
     .take(10)
@@ -26,16 +26,16 @@ export interface DslOperator<TEntity> {
 }
 
 export interface DslDirection<TEntity, TIndices extends keyof TEntity, TExclude> {
-    ascending: Dsl<TEntity, TIndices, DslDirection<TEntity, TIndices, TExclude> & TExclude>
-    descending: Dsl<TEntity, TIndices, DslDirection<TEntity, TIndices, TExclude> & TExclude>
+    ascending: DslQuery<TEntity, TIndices, DslDirection<TEntity, TIndices, TExclude> & TExclude>
+    descending: DslQuery<TEntity, TIndices, DslDirection<TEntity, TIndices, TExclude> & TExclude>
 }
 
 export interface DslTake<TEntity, TIndices extends keyof TEntity, TExclude> {
-    take(count: number): Dsl<TEntity, TIndices, DslTake<TEntity, TIndices, TExclude> & TExclude>
+    take(count: number): DslQuery<TEntity, TIndices, DslTake<TEntity, TIndices, TExclude> & TExclude>
 }
 
 export interface DslSkip<TEntity, TIndices extends keyof TEntity, TExclude> {
-    skip(count: number): Dsl<TEntity, TIndices, DslSkip<TEntity, TIndices, TExclude> & TExclude>
+    skip(count: number): DslQuery<TEntity, TIndices, DslSkip<TEntity, TIndices, TExclude> & TExclude>
 }
 
 export interface DslPropSpec<TEntity, TIndices extends keyof TEntity, TExclude> {
@@ -48,15 +48,15 @@ export type DslProperty<TEntity, TIndices extends keyof TEntity, TExclude> = {
 }
 
 export interface DslBoundary<TEntity, TIndices extends keyof TEntity, TPropType, TExclude> {
-    equaling(val: TPropType): Dsl<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
-    greaterThan(val: TPropType): Dsl<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
-    greaterThanOrEqualTo(val: TPropType): Dsl<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
-    lessThan(val: TPropType): Dsl<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
-    lessThanOrEqualTo(val: TPropType): Dsl<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
-    between(min: TPropType, max: TPropType, exclusions?: Exclusions): Dsl<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
+    equaling(val: TPropType): DslQuery<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
+    greaterThan(val: TPropType): DslQuery<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
+    greaterThanOrEqualTo(val: TPropType): DslQuery<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
+    lessThan(val: TPropType): DslQuery<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
+    lessThanOrEqualTo(val: TPropType): DslQuery<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
+    between(min: TPropType, max: TPropType, exclusions?: Exclusions): DslQuery<TEntity, TIndices, DslPropSpec<TEntity, TIndices, TExclude> & TExclude>
 }
 
-export type Dsl<TEntity, TIndices extends keyof TEntity, TExclude = {}> =
+export type DslQuery<TEntity, TIndices extends keyof TEntity, TExclude = {}> =
     Without<
         DslPropSpec<TEntity, TIndices, TExclude> &
         DslTake<TEntity, TIndices, TExclude> &
@@ -71,7 +71,6 @@ interface Entity {
     searchableDate: Date
 }
 
-let store: Dsl<Entity, "searchableString" | "searchableDate">
+let store: DslQuery<Entity, "searchableString" | "searchableDate">
 
-store.select()
-store.iterate(() => 7)
+store.over.searchableDate.equaling(new Date()).descending.skip(20).select()

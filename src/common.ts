@@ -18,7 +18,7 @@ export interface GetParams<TEntity, TIndices extends keyof TEntity> {
     direction?: Direction
 }
 
-export interface SelectionParams<TEntity, TIndices extends keyof TEntity> extends GetParams<TEntity, TIndices> {
+export interface QueryParams<TEntity, TIndices extends keyof TEntity> extends GetParams<TEntity, TIndices> {
     skip?: number
 }
 

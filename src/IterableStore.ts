@@ -1,4 +1,4 @@
-import { toIDBDirection, EntityClass, SelectionParams } from './common'
+import { toIDBDirection, EntityClass, QueryParams } from './common'
 import { DslSkip } from './IterableDsl'
 import TypedDB from './TypedDB'
 import { TypedStore } from './TypedStore'
@@ -14,10 +14,10 @@ export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices exte
     }
 
     doIterate(iterator: Iterator<TEntity>): Promise<number> 
-    doIterate(params: SelectionParams<TEntity, TIndices>, iterator: Iterator<TEntity>): Promise<number> 
+    doIterate(params: QueryParams<TEntity, TIndices>, iterator: Iterator<TEntity>): Promise<number> 
 
-    doIterate(arg1: SelectionParams<TEntity, TIndices> | Iterator<TEntity>, arg2?: Iterator<TEntity>): Promise<number> {
-        let params: SelectionParams<TEntity, TIndices> 
+    doIterate(arg1: QueryParams<TEntity, TIndices> | Iterator<TEntity>, arg2?: Iterator<TEntity>): Promise<number> {
+        let params: QueryParams<TEntity, TIndices> 
         let iterator: Iterator<TEntity>
 
         if (!arg2) {
@@ -25,7 +25,7 @@ export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices exte
             iterator = arg1 as Iterator<TEntity>
         }
         else {
-            params = arg1 as SelectionParams<TEntity, TIndices>
+            params = arg1 as QueryParams<TEntity, TIndices>
             iterator = arg2
         }
 
