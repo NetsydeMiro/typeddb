@@ -1,8 +1,8 @@
-import { Direction, QueryParams } from './common'
+import { Direction, QueryParams, Exclusions } from './common'
 import TypedDB from './TypedDB'
 import { Iterator } from './IterableStore'
 import { QueryableStore, Selector } from './QueryableStore'
-import { DslQuery, DslTake, DslSkip, DslDirection, DslPropSpec, DslProperty, DslOperator } from './QueryDsl'
+import { DslQuery, DslTake, DslSkip, DslDirection, DslPropSpec, DslProperty, DslOperator, DslBoundary } from './QueryDsl'
 
 export interface Selector<TEntity, TMapped> {
     (entity: TEntity, ix: number): TMapped
@@ -22,6 +22,33 @@ export class QueryBuilder<TEntity, TIdProp extends keyof TEntity, TIndices exten
     skip(count: number): DslQuery<TEntity, TIndices, DslSkip<TEntity, TIndices, {}>> {
         let params = {...this.params, skip: count}
         return new QueryBuilder(this.store, params)
+    }
+
+    private buildBoundaryObject<TExclude>(): DslBoundary<TEntity, TIndices, TEntity[TIndices], {}> {
+        return {
+            equaling(val: TEntity[TIndices]) {
+
+            }, 
+            greaterThan(val: TEntity[TIndices]) {
+
+            }, 
+            greaterThanOrEqualTo(val: TEntity[TIndices]) {
+
+            }, 
+            lessThan(val: TEntity[TIndices]) {
+
+            }, 
+            lessThanOrEqualTo(val: TEntity[TIndices]) {
+
+            }, 
+            between(min: TEntity[TIndices], max: TEntity[TIndices], exclusions?: Exclusions) {
+
+            }
+        } as DslBoundary<TEntity, TIndices, TEntity[TIndices], {}>
+    }
+
+    private buildPropertyObject<TExclude>(): DslProperty<TEntity, TIndices, {}> {
+        return {} as DslProperty<TEntity, TIndices, {}>
     }
 
     over: DslProperty<TEntity, TIndices, {}>

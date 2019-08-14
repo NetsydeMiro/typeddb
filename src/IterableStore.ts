@@ -1,5 +1,4 @@
 import { toIDBDirection, EntityClass, QueryParams } from './common'
-import { DslSkip } from './IterableDsl'
 import TypedDB from './TypedDB'
 import { TypedStore } from './TypedStore'
 
@@ -9,7 +8,7 @@ export interface Iterator<TEntity> {
 
 export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices extends keyof TEntity> extends TypedStore<TEntity, TIdProp, TIndices>
 {
-    constructor(db: TypedDB, entityClass: EntityClass<TEntity>, idProp: TIdProp, private indexedProps: Array<TIndices>) {
+    constructor(db: TypedDB, entityClass: EntityClass<TEntity>, idProp: TIdProp, public indexedProps: Array<TIndices>) {
         super(db, entityClass, idProp)
     }
 
