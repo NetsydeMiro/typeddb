@@ -2,7 +2,7 @@ import { Direction, Exclusions, Range, SelectionParams } from './common'
 import { IterableStore, Iterator } from './IterableStore'
 
 /*
-Iterator DSL
+Iterator DSL (Old)
 
 store.iterate().ascending(iterator)
 store.iterate(10).ascending(iterator)

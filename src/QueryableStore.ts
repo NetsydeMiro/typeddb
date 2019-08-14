@@ -1,13 +1,15 @@
 import { EntityClass, SelectionParams } from './common'
 import TypedDB from './TypedDB'
-import { IterableStore } from './IterableStore'
-import { DslSkip } from './QueryableDsl'
+import { IterableStore, Iterator } from './IterableStore'
+import { Dsl, DslTake, DslSkip, DslDirection, DslPropSpec, DslProperty, DslOperator } from './DslFluid'
 
 export interface Selector<TEntity, TMapped> {
     (entity: TEntity, ix: number): TMapped
 }
 
-export class QueryableStore<TEntity, TIdProp extends keyof TEntity, TIndices extends keyof TEntity> extends IterableStore<TEntity, TIdProp, TIndices>
+export class QueryableStore<TEntity, TIdProp extends keyof TEntity, TIndices extends keyof TEntity> 
+    extends IterableStore<TEntity, TIdProp, TIndices>
+    implements Dsl<TEntity, TIndices>
 {
     constructor(db: TypedDB, entityClass: EntityClass<TEntity>, idProp: TIdProp, queryableProps: Array<TIndices>) {
         super(db, entityClass, idProp, queryableProps)
@@ -65,9 +67,28 @@ export class QueryableStore<TEntity, TIdProp extends keyof TEntity, TIndices ext
         })
     }
 
-    select(count?: number): DslSkip<TEntity, TIndices> {
-        let params: SelectionParams<TEntity, TIndices> = { count }
-        return new DslSkip(this, params)
+    take(count: number): Dsl<TEntity, TIndices, DslTake<TEntity, TIndices, {}>> {
+        return {} as Dsl<TEntity, TIndices, DslTake<TEntity, TIndices, {}>>
+    }
+
+    skip(count: number): Dsl<TEntity, TIndices, DslSkip<TEntity, TIndices, {}>> {
+        return {} as Dsl<TEntity, TIndices, DslSkip<TEntity, TIndices, {}>>
+    }
+
+    over: DslProperty<TEntity, TIndices, {}>
+    having: DslProperty<TEntity, TIndices, {}>
+    ascending: Dsl<TEntity, TIndices, DslDirection<TEntity, TIndices, {}>>
+    descending: Dsl<TEntity, TIndices, DslDirection<TEntity, TIndices, {}>>
+
+    iterate(iterator: Iterator<TEntity>): Promise<number> {
+        return new Promise<number>((resolve, reject) => resolve(7))
+    }
+
+    select(): Promise<Array<TEntity>>
+    select<TMapped>(selector?: Selector<TEntity, TMapped>): Promise<Array<TMapped>> {
+        return new Promise<Array<TMapped>>((resolve, reject) => {
+
+        })
     }
 }
 

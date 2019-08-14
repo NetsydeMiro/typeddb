@@ -75,11 +75,6 @@ export class IterableStore<TEntity, TIdProp extends keyof TEntity, TIndices exte
             req.onerror = reject
         })
     }
-
-    iterate(count?: number): DslSkip<TEntity, TIndices> {
-        let params: SelectionParams<TEntity, TIndices> = { count }
-        return new DslSkip(this, params)
-    }
 }
 
 export default IterableStore

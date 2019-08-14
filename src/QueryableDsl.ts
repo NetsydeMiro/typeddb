@@ -2,27 +2,13 @@ import { Direction, Exclusions, Range, SelectionParams } from './common'
 import { QueryableStore } from './QueryableStore'
 
 /*
-Query Builder DSL
+Query Builder DSL (Old)
 store.select().ascending()
 store.select(10).ascending()
 store.select().skip(20).ascending()
 store.select().having('propName').ascending()
 store.select().having('propName').greaterThanOrEqualTo(val).descending()
 store.select(10).skip(20).having('propName').between(lower, upper, exclusions).ascending()
-
-Query Builder DSL 2
-store
-    .take(10)
-    .skip(20)
-
-    .over('propName', Range.greaterThan(val), 'descending')
-    .over.propName.greaterThan(val).descending
-
-    .having('propName', Range.greaterThan(val), 'descending')
-    .having.propName.greaterThan(val).descending
-
-    .select(ent => 'map')
-    .iterate(ent => 'iterate')
 */
 
 class DslDirection<TEntity> {
