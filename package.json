@@ -27,7 +27,7 @@
         "@types/sinon": "^7.0.13",
         "@types/systemjs": "~0.20.6",
         "del-cli": "~1.1.0",
-        "intern": "^4.5.0",
+        "intern": "^4.10.1",
         "sinon": "^7.4.1",
         "systemjs": "~0.20.19",
         "typescript": "^3.5.3"
